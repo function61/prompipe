@@ -32,12 +32,6 @@ to the internet.
 In short, only define ingress for the authenticated 80 port.
 
 
-Setup, sender
--------------
-
-TODO
-
-
 Setup, receiver
 ---------------
 
@@ -52,6 +46,52 @@ needed to define these additional ENV vars to make it happen automatically:
 
 - `METRICS_ENDPOINT=:9090/metrics/fooservice/rpi,job=fooservice,instance=rpi`
 - `METRICS_ENDPOINT2=:9090/metrics/barservice/rpi,job=barservice,instance=rpi`
+
+
+Setup, sender
+-------------
+
+Create skeleton `config.json` file:
+
+```
+$ ./prompipe sender exampleconfig > config.json
+```
+
+It will look like this:
+
+```
+{
+    "bearer_token": "GI2xDwDskyPhInJx8JtJHg",
+    "pairs": [
+        {
+            "source": "http://192.168.1.100:9090/metrics",
+            "destination": "http://promremotereceiver.example.com/metrics/fooproject/192.168.1.100"
+        }
+    ]
+}
+```
+
+Edit the file to your specific use case, then install sender to run on startup:
+
+```
+$ ./prompipe sender install
+Wrote unit file to /etc/systemd/system/prompipe-sender.service
+Run to enable on boot & to start now:
+        $ systemctl enable prompipe-sender
+        $ systemctl start prompipe-sender
+        $ systemctl status prompipe-sender
+```
+
+NOTE: you may need to run the above with `sudo`.
+
+Now that you have both the receiver and the sender running, check sender logs that no errors
+are emitted:
+
+```
+$ journalctl -fu prompipe-sender
+```
+
+Now check from Prometheus, that your desired metrics are appearing. :)
 
 
 Alternatives
