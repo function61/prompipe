@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/function61/gokit/cryptorandombytes"
 	"github.com/function61/gokit/ezhttp"
 	"github.com/function61/gokit/jsonfile"
 	"github.com/function61/gokit/ossignal"
@@ -132,7 +133,7 @@ func senderEntry() *cobra.Command {
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			exampleConfig := Config{
-				BearerToken: "sanoMuaRehtoriks",
+				BearerToken: cryptorandombytes.Base64Url(16),
 				Pairs: []Pair{
 					{
 						Source:      "http://192.168.1.100:9090/metrics",

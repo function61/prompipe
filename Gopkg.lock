@@ -3,9 +3,10 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:09f353b816105b030467fc463d6ff980fb555f45d8d77a678bcc7556e1ff065d"
+  digest = "1:370785732b8eaaeb8c28aa32dcabebee59035c83085decc82f0ac8a81275e349"
   name = "github.com/function61/gokit"
   packages = [
+    "cryptorandombytes",
     "dynversion",
     "envvar",
     "ezhttp",
@@ -61,6 +62,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/function61/gokit/cryptorandombytes",
     "github.com/function61/gokit/dynversion",
     "github.com/function61/gokit/envvar",
     "github.com/function61/gokit/ezhttp",
