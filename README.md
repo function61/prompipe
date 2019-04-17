@@ -1,5 +1,5 @@
 [![Build Status](https://img.shields.io/travis/function61/prompipe.svg?style=for-the-badge)](https://travis-ci.org/function61/prompipe)
-[![Download](https://img.shields.io/bintray/v/function61/prompipe/main.svg?style=for-the-badge&label=Download)](https://bintray.com/function61/prompipe/main/_latestVersion#files)
+[![Download](https://img.shields.io/bintray/v/function61/dl/prompipe.svg?style=for-the-badge&label=Download)](https://bintray.com/function61/dl/prompipe/_latestVersion#files)
 [![Download](https://img.shields.io/docker/pulls/fn61/prompipe.svg?style=for-the-badge)](https://hub.docker.com/r/fn61/prompipe/)
 
 prompipe pipes your Prometheus metrics to a remote destination.
