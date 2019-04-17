@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"sync"
 )
 
 const (
@@ -37,8 +38,23 @@ func runReceiver(stop *stopper.Stopper) error {
 		return err
 	}
 
-	// TODO: mutex
 	state := map[string][]byte{}
+	stateMu := sync.Mutex{}
+
+	readState := func(key string) ([]byte, bool) {
+		stateMu.Lock()
+		defer stateMu.Unlock()
+
+		value, ok := state[key]
+		return value, ok
+	}
+
+	writeState := func(key string, value []byte) {
+		stateMu.Lock()
+		defer stateMu.Unlock()
+
+		state[key] = value
+	}
 
 	putHandler := func(w http.ResponseWriter, r *http.Request) {
 		job := mux.Vars(r)["job"]
@@ -57,7 +73,7 @@ func runReceiver(stop *stopper.Stopper) error {
 
 		key := jobAndInstanceKey(job, instance)
 
-		state[key] = buf
+		writeState(key, buf)
 	}
 
 	getHandler := func(w http.ResponseWriter, r *http.Request) {
@@ -66,7 +82,7 @@ func runReceiver(stop *stopper.Stopper) error {
 
 		key := jobAndInstanceKey(job, instance)
 
-		body, found := state[key]
+		body, found := readState(key)
 		if !found {
 			http.Error(w, "not found", http.StatusNotFound)
 			return
