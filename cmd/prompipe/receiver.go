@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"sync"
+	"time"
 )
 
 const (
@@ -19,6 +20,11 @@ const (
 
 type ReceiverConfig struct {
 	ExpectedBearerToken string
+}
+
+type StateItem struct {
+	Output   []byte
+	Received time.Time
 }
 
 func readReceiverConfig() (*ReceiverConfig, error) {
@@ -38,22 +44,30 @@ func runReceiver(stop *stopper.Stopper) error {
 		return err
 	}
 
-	state := map[string][]byte{}
+	state := map[string]*StateItem{}
 	stateMu := sync.Mutex{}
 
-	readState := func(key string) ([]byte, bool) {
+	readState := func(key string) *StateItem {
 		stateMu.Lock()
 		defer stateMu.Unlock()
 
-		value, ok := state[key]
-		return value, ok
+		item, exists := state[key]
+
+		// do not serve stale entries as fresh (Prometheus weirdly defaults to non-timestamped
+		// data as if all samples magically could be read in realtime) forever.
+		// 10 mins because we have some Lambda functions with reporting interval of 5 minutes
+		if !exists || time.Since(item.Received) > 10*time.Minute {
+			return nil
+		}
+
+		return item
 	}
 
 	writeState := func(key string, value []byte) {
 		stateMu.Lock()
 		defer stateMu.Unlock()
 
-		state[key] = value
+		state[key] = &StateItem{value, time.Now()}
 	}
 
 	putHandler := func(w http.ResponseWriter, r *http.Request) {
@@ -82,15 +96,15 @@ func runReceiver(stop *stopper.Stopper) error {
 
 		key := jobAndInstanceKey(job, instance)
 
-		body, found := readState(key)
-		if !found {
+		item := readState(key)
+		if item == nil {
 			http.Error(w, "not found", http.StatusNotFound)
 			return
 		}
 
 		w.Header().Set("Content-Type", promContentType)
 
-		if _, err := w.Write(body); err != nil {
+		if _, err := w.Write(item.Output); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	}
