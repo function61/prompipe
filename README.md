@@ -94,6 +94,14 @@ $ journalctl -fu prompipe-sender
 Now check from Prometheus, that your desired metrics are appearing. :)
 
 
+Use as a library
+----------------
+
+You can also use this as a library, if you want a not-24/7-running job (maybe a batch job)
+to send its metrics when it's done (think scheduled tasks and/or Lambda tasks). See
+[pkg/prompipeclient/](pkg/prompipeclient/).
+
+
 Alternatives
 ------------
 
